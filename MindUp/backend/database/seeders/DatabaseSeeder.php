@@ -15,10 +15,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
+
+        if (User::query()->where('email', 'test@example.com')->exists()) {
+            return;
+        }
 
         User::factory()->create([
-            'name' => 'Test User',
+            'full_name' => 'Người dùng thử nghiệm',
             'email' => 'test@example.com',
         ]);
     }
