@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class PracticeSession extends Model
 {
     /**
@@ -50,4 +52,13 @@ class PracticeSession extends Model
         'practice_session_id'
     );
     }
+
+    public function notes(): HasMany
+    {
+    return $this->hasMany(
+        Note::class,
+        'practice_session_id'
+    );
+    }
+
 }
