@@ -21,6 +21,7 @@ class PracticeContentResource extends JsonResource
             'description' => $this->description,
             'guidance' => $this->guidance,
             'scope' => $this->scope,
+            'status' => $this->status,
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
         ];

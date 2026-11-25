@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\PracticeContentController;
+use App\Http\Controllers\Api\V1\PersonalPracticeContentController;
 
 
 
@@ -87,6 +88,42 @@ Route::prefix('v1/auth')->group(function (): void {
                 )
                     ->whereNumber('id')
                     ->name('practice-contents.show');
+                    
+                Route::post(
+                    '/my/practice-contents',
+                    [PersonalPracticeContentController::class, 'store']
+                )->name('my.practice-contents.store');    
+
+                Route::get(
+                    '/my/practice-contents',
+                    [PersonalPracticeContentController::class, 'index']
+                )->name('my.practice-contents.index');
+
+                Route::post(
+                    '/my/practice-contents',
+                    [PersonalPracticeContentController::class, 'store']
+                )->name('my.practice-contents.store');
+
+                Route::get(
+                    '/my/practice-contents/{id}',
+                    [PersonalPracticeContentController::class, 'show']
+                )
+                    ->whereNumber('id')
+                    ->name('my.practice-contents.show');
+
+                Route::patch(
+                    '/my/practice-contents/{id}',
+                    [PersonalPracticeContentController::class, 'update']
+                )
+                    ->whereNumber('id')
+                    ->name('my.practice-contents.update');
+                 
+                Route::patch(
+                    '/my/practice-contents/{id}/status',
+                    [PersonalPracticeContentController::class, 'updateStatus']
+                )
+                    ->whereNumber('id')
+                    ->name('my.practice-contents.update-status');    
             });
 
-            
+
