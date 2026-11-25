@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 
 class RegisterController extends Controller
@@ -20,6 +21,8 @@ class RegisterController extends Controller
         $user->role = 'user';
         $user->status = 'active';
         $user->save();
+
+        event(new Registered($user));
 
         return response()->json([
             'message' => 'Đăng ký tài khoản thành công.',
