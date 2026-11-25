@@ -37,4 +37,19 @@ class PracticeContentController extends Controller
 
         return new PracticeContentResource($content);
     }
+
+    public function random(Request $request): PracticeContentResource
+    {
+        $content = PracticeContent::query()
+            ->availableTo($request->user()->id)
+            ->inRandomOrder()
+            ->first();
+
+        if (! $content) {
+            abort(404, 'Chưa có nội dung luyện tập phù hợp.');
+        }
+
+        return new PracticeContentResource($content);
+    }
+    
 }

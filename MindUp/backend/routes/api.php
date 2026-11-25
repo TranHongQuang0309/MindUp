@@ -77,11 +77,16 @@ Route::prefix('v1/auth')->group(function (): void {
                 )->name('practice-contents.index');
 
                 Route::get(
+                    '/practice-contents/random',
+                    [PracticeContentController::class, 'random']
+                )->name('practice-contents.random');
+
+                Route::get(
                     '/practice-contents/{id}',
                     [PracticeContentController::class, 'show']
                 )
                     ->whereNumber('id')
                     ->name('practice-contents.show');
-            });   
+            });
 
-
+            
