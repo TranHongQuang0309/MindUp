@@ -22,8 +22,9 @@ Route::prefix('v1/auth')->group(function (): void {
         ->middleware('throttle:6,1')
         ->name('auth.login');
 
-    Route::middleware('auth:sanctum')->group(function (): void {
+        Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/me', MeController::class)
+            ->middleware('account.active')
             ->name('auth.me');
 
         Route::post('/logout', LogoutController::class)
@@ -33,17 +34,22 @@ Route::prefix('v1/auth')->group(function (): void {
             '/email/verification-notification',
             SendEmailVerificationController::class
         )
-            ->middleware('throttle:6,1')
+            ->middleware(['account.active', 'throttle:6,1'])
             ->name('verification.send');
 
         Route::get(
             '/email/verify/{id}/{hash}',
             VerifyEmailController::class
         )
-            ->middleware(['signed', 'throttle:6,1'])
+            ->middleware([
+                'account.active',
+                'signed',
+                'throttle:6,1',
+            ])
             ->name('verification.verify');
-
+            
         });
+
 
         Route::post('/forgot-password', ForgotPasswordController::class)
             ->middleware('throttle:3,1')
