@@ -12,7 +12,8 @@ use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\PracticeContentController;
 use App\Http\Controllers\Api\V1\PersonalPracticeContentController;
 
-
+use App\Http\Controllers\Api\V1\PracticeSessionController;
+use App\Http\Controllers\Api\V1\ArgumentVersionController;
 
 
 Route::prefix('v1/auth')->group(function (): void {
@@ -124,6 +125,40 @@ Route::prefix('v1/auth')->group(function (): void {
                 )
                     ->whereNumber('id')
                     ->name('my.practice-contents.update-status');    
+
+                Route::post(
+                    '/practice-sessions',
+                    [PracticeSessionController::class, 'store']
+                )->name('practice-sessions.store');
+
+                Route::get(
+                    '/practice-sessions/{id}',
+                    [PracticeSessionController::class, 'show']
+                )
+                    ->whereNumber('id')
+                    ->name('practice-sessions.show');
+
+                Route::patch(
+                    '/practice-sessions/{id}',
+                    [PracticeSessionController::class, 'update']
+                )
+                    ->whereNumber('id')
+                    ->name('practice-sessions.update');
+
+                Route::get(
+                    '/practice-sessions/{sessionId}/versions',
+                    [ArgumentVersionController::class, 'index']
+                )
+                    ->whereNumber('sessionId')
+                    ->name('practice-sessions.versions.index');
+
+                Route::get(
+                    '/practice-sessions/{sessionId}/versions/{versionId}',
+                    [ArgumentVersionController::class, 'show']
+                )
+                    ->whereNumber(['sessionId', 'versionId'])
+                    ->name('practice-sessions.versions.show');    
+
             });
 
 
