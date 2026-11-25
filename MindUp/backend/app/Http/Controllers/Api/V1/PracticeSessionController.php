@@ -15,8 +15,54 @@ use Illuminate\Http\Request;
 use App\Http\Requests\PracticeSession\CompletePracticeSessionRequest;
 use App\Services\Practice\CompletePracticeSessionService;
 
+
+use App\Http\Requests\PracticeSession\IndexPracticeSessionRequest;
+use App\Http\Resources\PracticeSessionSummaryResource;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+use App\Http\Requests\PracticeSession\DeletePracticeSessionRequest;
+use App\Services\Practice\DeletePracticeSessionService;
+use Illuminate\Http\Response;
+
 class PracticeSessionController extends Controller
 {
+
+
+    public function index(
+        IndexPracticeSessionRequest $request
+    ): AnonymousResourceCollection {
+        $data = $request->validated();
+        $perPage = (int) ($data['per_page'] ?? 12);
+
+        $query = PracticeSession::query()
+            ->where('user_id', $request->user()->id);
+
+        if (isset($data['status'])) {
+            $query->where('status', $data['status']);
+        }
+
+        $sessions = $query
+            ->select([
+                'id',
+                'practice_content_id',
+                'content_title_snapshot',
+                'status',
+                'revision',
+                'target_duration_seconds',
+                'started_at',
+                'last_saved_at',
+                'completed_at',
+                'created_at',
+                'updated_at',
+            ])
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return PracticeSessionSummaryResource::collection($sessions);
+    }
+
     public function store(
         StorePracticeSessionRequest $request,
         StartPracticeSessionService $service
@@ -67,10 +113,7 @@ class PracticeSessionController extends Controller
         $session = $service->save(
             $request->user(),
             $id,
-            (int) $data['revision'],
-            $data['body'] ?? null,
-            $data['notes'] ?? null,
-            $data['reference_sources'] ?? null
+            $data
         );
 
         return (new PracticeSessionResource($session))
@@ -99,6 +142,20 @@ class PracticeSessionController extends Controller
                 ])
                 ->response();
         }
-        
-    
+        public function destroy(
+            DeletePracticeSessionRequest $request,
+            int $id,
+            DeletePracticeSessionService $service
+        ): Response {
+            $data = $request->validated();
+
+            $service->delete(
+                $request->user(),
+                $id,
+                (int) $data['revision']
+            );
+
+            return response()->noContent();
+        }
+
 }

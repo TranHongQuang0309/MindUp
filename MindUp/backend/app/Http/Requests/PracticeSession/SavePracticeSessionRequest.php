@@ -18,13 +18,20 @@ class SavePracticeSessionRequest extends FormRequest
     {
         return [
             'revision' => ['required', 'integer', 'min:0'],
-            'body' => ['sometimes','required', 'string', 'max:50000'],
+            'body' => ['sometimes', 'nullable', 'string', 'max:50000'],
 
             'user_id' => ['prohibited'],
             'practice_content_id' => ['prohibited'],
             'status' => ['prohibited'],
             'started_at' => ['prohibited'],
             'completed_at' => ['prohibited'],
+
+            'current_recording_id' => [
+                'sometimes',
+                'nullable',
+                'integer',
+                'min:1',
+            ],
 
             'notes' => ['sometimes', 'array', 'max:50'],
 
@@ -159,6 +166,11 @@ class SavePracticeSessionRequest extends FormRequest
                 'Thông tin trích dẫn phải là chuỗi ký tự.',
             'reference_sources.*.citation.max' =>
                 'Thông tin trích dẫn không được vượt quá 10.000 ký tự.',
+
+            'current_recording_id.integer' =>
+                'ID bản ghi âm phải là số nguyên.',
+            'current_recording_id.min' =>
+                'ID bản ghi âm không hợp lệ.',
         ];
     }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\PersonalPracticeContentController;
 use App\Http\Controllers\Api\V1\PracticeSessionController;
 use App\Http\Controllers\Api\V1\ArgumentVersionController;
 
+use App\Http\Controllers\Api\V1\AudioRecordingController;
 
 Route::prefix('v1/auth')->group(function (): void {
     Route::post('/register', RegisterController::class)
@@ -167,7 +168,32 @@ Route::prefix('v1/auth')->group(function (): void {
                     ->whereNumber('id')
                     ->name('practice-sessions.complete');
 
+                Route::get(
+                    '/practice-sessions',
+                    [PracticeSessionController::class, 'index']
+                )->name('practice-sessions.index');    
 
+                Route::delete(
+                    '/practice-sessions/{id}',
+                    [PracticeSessionController::class, 'destroy']
+                )
+                    ->whereNumber('id')
+                    ->name('practice-sessions.destroy');
+
+                Route::post(
+                    '/practice-sessions/{sessionId}/audio-recordings',
+                    [AudioRecordingController::class, 'store']
+                )
+                    ->whereNumber('sessionId')
+                    ->middleware('throttle:10,1')
+                    ->name('practice-sessions.audio-recordings.store');    
+
+                Route::get(
+                    '/practice-sessions/{sessionId}/audio-recordings/{recordingId}/file',
+                    [AudioRecordingController::class, 'file']
+                )
+                    ->whereNumber(['sessionId', 'recordingId'])
+                    ->name('practice-sessions.audio-recordings.file');
             });
 
 

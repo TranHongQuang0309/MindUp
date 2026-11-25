@@ -13,68 +13,103 @@ use App\Models\ReferenceSource;
 class SavePracticeSessionService
 {
     public function save(
-        User $user,
-        int $sessionId,
-        int $expectedRevision,
-        ?string $body,
-        ?array $notes = null,
-        ?array $referenceSources = null
+    User $user,
+    int $sessionId,
+    array $changes
+): PracticeSession {
+    return DB::transaction(function () use (
+        $user,
+        $sessionId,
+        $changes
     ): PracticeSession {
-        return DB::transaction(function () use (
-            $user,
-            $sessionId,
-            $expectedRevision,
-            $body,
-            $notes,
-            $referenceSources
-        ): PracticeSession {
-            $session = PracticeSession::query()
-                ->where('user_id', $user->id)
-                ->lockForUpdate()
-                ->findOrFail($sessionId);
+        $session = PracticeSession::query()
+            ->where('user_id', $user->id)
+            ->lockForUpdate()
+            ->findOrFail($sessionId);
 
-            if ($referenceSources !== null) {
-                $this->syncReferenceSources($session, $referenceSources);
-            } 
-                
-            if ($session->revision !== $expectedRevision) {
-                abort(
-                    409,
-                    'Phiên đã được cập nhật từ một yêu cầu khác. '
-                    .'Vui lòng tải lại phiên trước khi lưu.'
-                );
+        if ($session->revision !== (int) $changes['revision']) {
+            abort(
+                409,
+                'Phiên đã được cập nhật từ một yêu cầu khác. '
+                .'Vui lòng tải lại phiên trước khi lưu.'
+            );
+        }
+
+        $argument = $session->argument()->firstOrFail();
+
+        if (array_key_exists('body', $changes)) {
+            $argument->body = $changes['body'];
+        }
+
+        if (array_key_exists('current_recording_id', $changes)) {
+            $recordingId = $changes['current_recording_id'];
+
+            if ($recordingId === null) {
+                $argument->currentRecording()->dissociate();
+            } else {
+                $recording = $argument->audioRecordings()
+                    ->whereKey((int) $recordingId)
+                    ->first();
+
+                if (! $recording) {
+                    throw ValidationException::withMessages([
+                        'current_recording_id' =>
+                            'Bản ghi âm không tồn tại trong bài lập luận này.',
+                    ]);
+                }
+
+                $argument->currentRecording()->associate($recording);
+            }
+        }
+
+        if ($argument->isDirty(['body', 'current_recording_id'])) {
+            $hasText = trim((string) $argument->body) !== '';
+            $hasRecording = $argument->current_recording_id !== null;
+
+            if (! $hasText && ! $hasRecording) {
+                throw ValidationException::withMessages([
+                    'body' => 'Bài lập luận cần có văn bản '
+                        .'hoặc một bản ghi âm.',
+                ]);
             }
 
-            $argument = $session->argument()->firstOrFail();
+            $argument->save();
 
-            if ($body !== null && $argument->body !== $body) {
-                $argument->body = $body;
-                $argument->save();
+            $versionNumber = (
+                (int) $argument->versions()->max('version_number')
+            ) + 1;
 
-                $versionNumber = (
-                    (int) $argument->versions()->max('version_number')
-                ) + 1;
+            $version = new ArgumentVersion();
+            $version->argument()->associate($argument);
+            $version->version_number = $versionNumber;
+            $version->body_snapshot = $argument->body;
+            $version->audio_recording_id =
+                $argument->current_recording_id;
+            $version->save();
+        }
 
-                $version = new ArgumentVersion();
-                $version->argument()->associate($argument);
-                $version->version_number = $versionNumber;
-                $version->body_snapshot = $argument->body;
-                $version->audio_recording_id =
-                    $argument->current_recording_id;
-                $version->save();
-            }
+        if (array_key_exists('notes', $changes)) {
+            $this->syncNotes($session, $changes['notes']);
+        }
 
-            if ($notes !== null) {
-                $this->syncNotes($session, $notes);
-            }
+        if (array_key_exists('reference_sources', $changes)) {
+            $this->syncReferenceSources(
+                $session,
+                $changes['reference_sources']
+            );
+        }
 
-            $session->revision = $session->revision + 1;
-            $session->last_saved_at = now();
-            $session->save();
+        $session->revision = $session->revision + 1;
+        $session->last_saved_at = now();
+        $session->save();
 
-            return $session->load(['argument', 'notes','referenceSources']);
-        });
-    }
+        return $session->load([
+            'argument',
+            'notes',
+            'referenceSources',
+        ]);
+    });
+}
 
     private function syncNotes(
         PracticeSession $session,
