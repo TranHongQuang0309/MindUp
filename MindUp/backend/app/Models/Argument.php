@@ -43,4 +43,12 @@ class Argument extends Model
         'argument_id'
     );
     }
+
+    public function aiFeedbacks(): HasMany
+    {
+    return $this->hasMany(
+        AIFeedback::class,
+        'argument_id'
+    );
+    }
 }

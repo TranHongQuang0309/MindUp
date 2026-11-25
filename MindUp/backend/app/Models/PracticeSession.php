@@ -61,4 +61,11 @@ class PracticeSession extends Model
     );
     }
 
+    public function referenceSources(): HasMany
+    {
+    return $this->hasMany(
+        ReferenceSource::class,
+        'practice_session_id'
+    );
+    }
 }
