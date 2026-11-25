@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Illuminate\Database\Eloquent\Relations\HasOne;
 class PracticeSession extends Model
 {
     /**
@@ -41,5 +41,13 @@ class PracticeSession extends Model
             PracticeContent::class,
             'practice_content_id'
         );
+    }
+
+    public function argument(): HasOne
+    {
+    return $this->hasOne(
+        Argument::class,
+        'practice_session_id'
+    );
     }
 }
