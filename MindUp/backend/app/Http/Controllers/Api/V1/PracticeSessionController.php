@@ -12,6 +12,9 @@ use App\Services\Practice\StartPracticeSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use App\Http\Requests\PracticeSession\CompletePracticeSessionRequest;
+use App\Services\Practice\CompletePracticeSessionService;
+
 class PracticeSessionController extends Controller
 {
     public function store(
@@ -76,4 +79,26 @@ class PracticeSessionController extends Controller
             ])
             ->response();
     }
+
+        public function complete(
+            CompletePracticeSessionRequest $request,
+            int $id,
+            CompletePracticeSessionService $service
+        ): JsonResponse {
+            $data = $request->validated();
+
+            $session = $service->complete(
+                $request->user(),
+                $id,
+                (int) $data['revision']
+            );
+
+            return (new PracticeSessionResource($session))
+                ->additional([
+                    'message' => 'Phiên luyện tập đã hoàn thành.',
+                ])
+                ->response();
+        }
+        
+    
 }

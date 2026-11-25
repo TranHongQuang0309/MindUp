@@ -159,6 +159,15 @@ Route::prefix('v1/auth')->group(function (): void {
                     ->whereNumber(['sessionId', 'versionId'])
                     ->name('practice-sessions.versions.show');    
 
+
+                Route::post(
+                    '/practice-sessions/{id}/complete',
+                    [PracticeSessionController::class, 'complete']
+                )
+                    ->whereNumber('id')
+                    ->name('practice-sessions.complete');
+
+
             });
 
 
