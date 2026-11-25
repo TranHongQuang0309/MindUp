@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 #[Fillable(['full_name', 'email', 'password'])]
@@ -31,4 +33,21 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function practiceContents(): HasMany
+    {
+    return $this->hasMany(
+        PracticeContent::class,
+        'created_by'
+    );
+    }
+
+    public function practiceSessions(): HasMany
+    {
+        return $this->hasMany(
+            PracticeSession::class,
+            'user_id'
+        );
+    }
+    
 }
