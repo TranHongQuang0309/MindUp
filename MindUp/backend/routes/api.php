@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\V1\PracticeContentController;
 
 
 
@@ -47,7 +48,7 @@ Route::prefix('v1/auth')->group(function (): void {
                 'throttle:6,1',
             ])
             ->name('verification.verify');
-            
+
         });
 
 
@@ -60,5 +61,27 @@ Route::prefix('v1/auth')->group(function (): void {
             ->name('auth.reset-password');
 
 
-});
+        });
+
+
+        Route::prefix('v1')
+            ->middleware([
+                'auth:sanctum',
+                'account.active',
+                'verified',
+            ])
+            ->group(function (): void {
+                Route::get(
+                    '/practice-contents',
+                    [PracticeContentController::class, 'index']
+                )->name('practice-contents.index');
+
+                Route::get(
+                    '/practice-contents/{id}',
+                    [PracticeContentController::class, 'show']
+                )
+                    ->whereNumber('id')
+                    ->name('practice-contents.show');
+            });   
+
 
