@@ -7,6 +7,11 @@ use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SendEmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
+
+
+
 
 Route::prefix('v1/auth')->group(function (): void {
     Route::post('/register', RegisterController::class)
@@ -37,6 +42,17 @@ Route::prefix('v1/auth')->group(function (): void {
         )
             ->middleware(['signed', 'throttle:6,1'])
             ->name('verification.verify');
-    });
+
+        });
+
+        Route::post('/forgot-password', ForgotPasswordController::class)
+            ->middleware('throttle:3,1')
+            ->name('auth.forgot-password');
+
+        Route::post('/reset-password', ResetPasswordController::class)
+            ->middleware('throttle:6,1')
+            ->name('auth.reset-password');
+
+
 });
 
